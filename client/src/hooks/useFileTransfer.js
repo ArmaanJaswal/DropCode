@@ -10,6 +10,7 @@ export const useFileTransfer = () => {
   const [receivedFileName, setReceivedFileName] = useState("");
   const [receiving, setReceiving] = useState(false);
   const [receiveProgress, setReceiveProgress] = useState(0);
+  const [receivedFile, setReceivedFile] = useState(null);
 
   // Store incoming file information
   const incomingFileRef = useRef({
@@ -171,13 +172,18 @@ export const useFileTransfer = () => {
     }
 
     // =========================
-    // FILE END
+    // FILE END (DO NOT AUTO-DOWNLOAD, WAIT FOR USER ACTION)
     // =========================
     if (data.type === "file-end") {
-      console.log("File received completely");
+      console.log("File received completely, ready for user download");
 
       const incoming = incomingFileRef.current;
-      downloadReceivedFile(incoming.chunks, incoming.mimeType, incoming.name);
+      setReceivedFile({
+        name: incoming.name,
+        size: incoming.size,
+        mimeType: incoming.mimeType,
+        chunks: [...incoming.chunks],
+      });
 
       setReceiving(false);
       setReceiveProgress(100);
@@ -186,13 +192,35 @@ export const useFileTransfer = () => {
     }
   };
 
+  // =========================
+  // USER-TRIGGERED DOWNLOAD
+  // =========================
+  const downloadFile = () => {
+    if (!receivedFile) return;
+    downloadReceivedFile(
+      receivedFile.chunks,
+      receivedFile.mimeType,
+      receivedFile.name
+    );
+  };
+
+  const clearReceivedFile = () => {
+    setReceivedFile(null);
+    setReceivedFileName("");
+    setReceiveProgress(0);
+  };
+
   return {
     file,
+    setFile,
     sending,
     sendProgress,
     receivedFileName,
     receiving,
     receiveProgress,
+    receivedFile,
+    downloadFile,
+    clearReceivedFile,
     handleFileSelect,
     sendFile,
     handleIncomingData,

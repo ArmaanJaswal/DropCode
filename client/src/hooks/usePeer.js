@@ -15,6 +15,7 @@ export const usePeer = (onDataReceived) => {
   const [status, setStatus] = useState("Waiting for connection");
   const [qr, setQr] = useState("");
   const [shareLink, setShareLink] = useState("");
+  const [isHost, setIsHost] = useState(false);
 
   // =========================
   // REFS
@@ -206,6 +207,7 @@ export const usePeer = (onDataReceived) => {
 
     if (targetRoom) {
       autoJoinedRef.current = true;
+      setIsHost(false);
       setJoinCode(targetRoom);
       setRoomCode(targetRoom);
       setStatus(`Joining room ${targetRoom}...`);
@@ -226,6 +228,7 @@ export const usePeer = (onDataReceived) => {
       return;
     }
 
+    setIsHost(true);
     socket.emit("create-room", peerId);
 
     setStatus("Creating room...");
@@ -247,6 +250,7 @@ export const usePeer = (onDataReceived) => {
       return;
     }
 
+    setIsHost(false);
     setRoomCode(code);
     socket.emit("join-room", {
       roomCode: code,
@@ -265,6 +269,7 @@ export const usePeer = (onDataReceived) => {
       connectionRef.current = null;
     }
 
+    setIsHost(false);
     setConnected(false);
     setRoomCode("");
     setJoinCode("");
@@ -290,6 +295,7 @@ export const usePeer = (onDataReceived) => {
     leaveRoom,
     qr,
     shareLink,
+    isHost,
   };
 };
 
